@@ -5,8 +5,6 @@ on:
     paths:
       - 'Dockerfile'
       - '.github/workflows/build-openssl.yml'
-      - 'generate_mldsa_key.sh'
-      - 'generate_and_sign_slh_dsa.sh'
 
 jobs:
   build_and_push:
