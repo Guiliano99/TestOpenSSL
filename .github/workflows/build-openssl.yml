@@ -3,7 +3,7 @@ name: Build and Push OpenSSL Container
 on:
   push:
     paths:
-      - 'Dockerfile'
+      - '../../data/Dockerfile'
       - '.github/workflows/build-openssl.yml'
 
 jobs:
@@ -33,4 +33,12 @@ jobs:
           docker buildx build \
             --tag ghcr.io/${REPO_OWNER_LC}/openssl-test-base:latest \
             --push \
-            -f Dockerfile .
+            -f data/dockerfiles/Dockerfile .
+
+      - name: Build and push dev Docker image
+        run: |
+          docker buildx build \
+            --tag ghcr.io/${REPO_OWNER_LC}/cmp-test-dev:latest \
+            --build-arg BASE_IMAGE=ghcr.io/${REPO_OWNER_LC}/openssl-tmp2-base:latest \
+            --push \
+            -f data/dockerfiles/Dockerfile.tmp2 .
