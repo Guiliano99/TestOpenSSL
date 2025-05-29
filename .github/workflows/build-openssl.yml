@@ -3,7 +3,7 @@ name: Build and Push OpenSSL Container
 on:
   push:
     paths:
-      - '../../data/Dockerfile'
+      - './data/dockerfiles/*'
       - '.github/workflows/build-openssl.yml'
 
 jobs:
