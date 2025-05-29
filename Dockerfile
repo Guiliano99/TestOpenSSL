@@ -26,8 +26,4 @@ ENV PATH="/usr/local/bin:$PATH"
 ENV LD_LIBRARY_PATH="/usr/local/lib"
 
 # Copy custom scripts
-COPY generate_mldsa_key.sh /usr/local/bin/
-COPY generate_and_sign_slh_dsa.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/generate_mldsa_key.sh /usr/local/bin/generate_and_sign_slh_dsa.sh
-
 CMD ["bash"]
