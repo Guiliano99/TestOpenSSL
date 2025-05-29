@@ -1,0 +1,50 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV OPENSSL_VERSION=3.5.0
+ENV OPENSSL_PREFIX=/usr/local
+
+# 1. Install dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential curl git perl make cmake \
+    autoconf automake libtool pkg-config \
+    libssl-dev libcurl4-openssl-dev \
+    libjson-c-dev libgcrypt20-dev uuid-dev \
+    libtss2-dev libtss2-mu0 libtss2-esys0 libtss2-rc0 \
+    ca-certificates
+
+# 2. Build and install OpenSSL 3.5.0
+WORKDIR /usr/src
+RUN curl -sL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz | tar xz && \
+    cd openssl-${OPENSSL_VERSION} && \
+    ./Configure linux-x86_64 --prefix=${OPENSSL_PREFIX} --openssldir=${OPENSSL_PREFIX}/ssl && \
+    make -j"$(nproc)" && \
+    make install_sw && \
+    cd .. && rm -rf openssl-${OPENSSL_VERSION}
+
+# Ensure our OpenSSL is used
+ENV PATH="${OPENSSL_PREFIX}/bin:$PATH"
+ENV LD_LIBRARY_PATH="${OPENSSL_PREFIX}/lib"
+
+# 3. Clone and build tpm2-tss
+RUN git clone --depth=1 https://github.com/tpm2-software/tpm2-tss.git && \
+    cd tpm2-tss && \
+    ./bootstrap && \
+    ./configure --prefix=/usr --disable-doxygen-doc && \
+    make -j"$(nproc)" && \
+    make install && \
+    ldconfig
+
+# 4. Clone and build tpm2-tss-engine (linked to our OpenSSL)
+RUN git clone --depth=1 https://github.com/tpm2-software/tpm2-tss-engine.git && \
+    cd tpm2-tss-engine && \
+    ./bootstrap && \
+    ./configure --prefix=/usr --with-openssl-dir=${OPENSSL_PREFIX} && \
+    make -j"$(nproc)" && \
+    make install && \
+    ldconfig
+
+# 5. Check engine availability (optional)
+RUN openssl version && openssl engine -t -c tpm2 || true
+
+CMD ["bash"]
